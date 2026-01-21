@@ -3,34 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe: Championship Edition</title>
+    <title>Tic-Tac-Toe Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --p1: #00d2ff; --p2: #ff0058; --bg: #0f0c29; --card: rgba(255,255,255,0.08); }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         
-        /* Scoreboard Styling */
-        .scoreboard { display: flex; gap: 20px; margin-bottom: 20px; width: 100%; max-width: 400px; justify-content: center; }
-        .score-card { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; flex: 1; border: 1px solid rgba(255,255,255,0.1); }
-        .score-val { font-size: 2rem; font-weight: bold; display: block; }
-        .score-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .game-header { font-size: 1.2rem; margin-bottom: 10px; color: #aaa; }
+        #matchCount { color: #fff; font-weight: bold; }
 
-        .controls { background: var(--card); padding: 20px; border-radius: 15px; width: 350px; text-align: center; margin-bottom: 20px; }
-        select, input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 8px; border: none; background: #1a1a3a; color: white; }
+        .scoreboard { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 400px; }
+        .score-card { background: var(--card); padding: 12px; border-radius: 12px; text-align: center; flex: 1; border: 1px solid rgba(255,255,255,0.1); }
+        .score-val { font-size: 1.8rem; font-weight: bold; display: block; }
+        .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 
-        .status { font-size: 1.5rem; margin-bottom: 15px; font-weight: bold; color: var(--p1); }
+        .controls { background: var(--card); padding: 20px; border-radius: 15px; width: 320px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        select, input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 8px; border: none; background: #1a1a3a; color: white; outline: none; }
+
+        .status { font-size: 1.4rem; margin-bottom: 15px; font-weight: bold; min-height: 35px; }
         
         .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; }
-        .cell { width: 100px; height: 100px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .cell:hover { background: rgba(255,255,255,0.1); }
-        .cell.x { color: var(--p1); }
-        .cell.o { color: var(--p2); }
+        .cell { width: 100px; height: 100px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .cell:hover { background: rgba(255,255,255,0.1); border-color: var(--p1); }
+        .cell.x { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
+        .cell.o { color: var(--p2); text-shadow: 0 0 10px var(--p2); }
         .win-anim { background: #2ed573 !important; transform: scale(1.05); color: white !important; }
 
-        .btn { margin-top: 20px; padding: 12px 30px; border: none; border-radius: 50px; background: linear-gradient(45deg, var(--p1), var(--p2)); color: white; font-weight: bold; cursor: pointer; }
+        .btn { margin-top: 20px; padding: 12px 40px; border: none; border-radius: 50px; background: linear-gradient(45deg, var(--p1), var(--p2)); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
+
+    <div class="game-header">Match #<span id="matchCount">1</span></div>
 
     <div class="scoreboard">
         <div class="score-card">
@@ -45,21 +50,21 @@
 
     <div class="controls">
         <select id="mode" onchange="toggleMode()">
-            <option value="pvc">VS Computer</option>
-            <option value="pvp">VS Friend (Local)</option>
+            <option value="pvc">Play Against Computer</option>
+            <option value="pvp">Play Against Friend</option>
         </select>
-        <div id="aiSettings">
-            <select id="diff">
-                <option value="1">Beginner (Win +1 / Loss -1)</option>
-                <option value="2">Medium (Win +2 / Loss -2)</option>
-                <option value="3">Hard (Win +5 / Loss -5)</option>
-            </select>
-        </div>
-        <input type="text" id="name1" placeholder="P1 Name" value="Player 1" onchange="updateLabels()">
-        <input type="text" id="name2" placeholder="P2 Name" value="Computer" onchange="updateLabels()">
+        
+        <select id="diff">
+            <option value="1">Beginner</option>
+            <option value="2">Medium</option>
+            <option value="3">Hard</option>
+        </select>
+
+        <input type="text" id="name1" placeholder="P1 Name" value="Player 1" onkeyup="updateLabels()">
+        <input type="text" id="name2" placeholder="P2 Name" value="Computer" onkeyup="updateLabels()">
     </div>
 
-    <div class="status" id="status">Your Turn!</div>
+    <div class="status" id="status" style="color: var(--p1);">Your Turn!</div>
 
     <div class="board" id="board">
         <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
@@ -67,13 +72,13 @@
         <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
     </div>
 
-    <button class="btn" onclick="reset(true)">Clear Board</button>
+    <button class="btn" onclick="resetBoard()">Next Match</button>
 
     <script>
         const cells = document.querySelectorAll('.cell');
         const statusTxt = document.getElementById('status');
         let board = ["", "", "", "", "", "", "", "", ""];
-        let active = true, turn = "X";
+        let active = true, turn = "X", totalMatches = 1;
         let score1 = 0, score2 = 0;
 
         const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -85,11 +90,12 @@
             makeMove(i, turn);
             
             if (active && document.getElementById('mode').value === 'pvc') {
-                active = false; // Block player while AI "thinks"
+                active = false;
+                statusTxt.innerText = "Thinking...";
                 setTimeout(aiPlay, 500);
             } else if (active) {
                 turn = turn === "X" ? "O" : "X";
-                updateStatus();
+                updateStatusUI();
             }
         }
 
@@ -97,27 +103,35 @@
             board[i] = p;
             cells[i].innerText = p;
             cells[i].classList.add(p.toLowerCase());
-            check(p);
+            checkWinner(p);
         }
 
-        function check(p) {
+        function checkWinner(p) {
             let winLine = wins.find(l => board[l[0]] && board[l[0]]===board[l[1]] && board[l[0]]===board[l[2]]);
             if (winLine) {
                 active = false;
                 winLine.forEach(idx => cells[idx].classList.add('win-anim'));
-                updateScores(p);
+                processScore(p);
                 statusTxt.innerText = `${p === "X" ? document.getElementById('name1').value : document.getElementById('name2').value} Wins!`;
-                if(p === "X") confetti();
+                statusTxt.style.color = "#2ed573";
+                if(p === "X") confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             } else if (!board.includes("")) {
                 active = false;
-                statusTxt.innerText = "Draw!";
+                statusTxt.innerText = "Match Draw!";
+                statusTxt.style.color = "#aaa";
             }
         }
 
-        function updateScores(winner) {
+        function processScore(winner) {
             const mode = document.getElementById('mode').value;
             const diff = parseInt(document.getElementById('diff').value);
-            let points = mode === 'pvc' ? diff : 1;
+            
+            let points = 1; 
+            if (mode === 'pvc') {
+                if (diff === 1) points = 1;      // Beginner
+                else if (diff === 2) points = 2; // Medium
+                else if (diff === 3) points = 5; // Hard
+            }
 
             if (winner === "X") {
                 score1 += points;
@@ -130,19 +144,18 @@
             document.getElementById('s2').innerText = score2;
         }
 
-        // --- AI LOGIC ---
+        // --- AI ENGINE ---
         function aiPlay() {
-            if (board.every(c => c !== "")) return;
             const d = document.getElementById('diff').value;
             let move;
             if (d == "1") move = randomMove();
-            else if (d == "2") move = Math.random() > 0.5 ? minimax(board, 0, true) : randomMove(); // Mix of smart and random
+            else if (d == "2") move = Math.random() > 0.5 ? bestMove() : randomMove();
             else move = bestMove();
 
             active = true;
             makeMove(move, "O");
             turn = "X";
-            if (active) updateStatus();
+            if (active) updateStatusUI();
         }
 
         function randomMove() {
@@ -155,7 +168,7 @@
             for(let i=0; i<9; i++) {
                 if(board[i]==="") {
                     board[i]="O";
-                    let score = minimaxAlgo(board, 0, false);
+                    let score = minimax(board, 0, false);
                     board[i]="";
                     if(score > bScore) { bScore = score; move = i; }
                 }
@@ -163,52 +176,58 @@
             return move;
         }
 
-        function minimaxAlgo(b, depth, isMax) {
-            let res = evalWin(b);
+        function minimax(b, depth, isMax) {
+            let res = evalBoard(b);
             if(res !== null) return res;
             if(isMax) {
                 let best = -Infinity;
                 for(let i=0; i<9; i++) if(b[i]==="") {
-                    b[i]="O"; best = Math.max(best, minimaxAlgo(b, depth+1, false)); b[i]="";
+                    b[i]="O"; best = Math.max(best, minimax(b, depth+1, false)); b[i]="";
                 }
                 return best;
             } else {
                 let best = Infinity;
                 for(let i=0; i<9; i++) if(b[i]==="") {
-                    b[i]="X"; best = Math.min(best, minimaxAlgo(b, depth+1, true)); b[i]="";
+                    b[i]="X"; best = Math.min(best, minimax(b, depth+1, true)); b[i]="";
                 }
                 return best;
             }
         }
 
-        function evalWin(b) {
+        function evalBoard(b) {
             for(let l of wins) if(b[l[0]] && b[l[0]]===b[l[1]] && b[l[0]]===b[l[2]]) return b[l[0]]==="O"?10:-10;
             return b.includes("") ? null : 0;
         }
 
-        // --- UI HELPERS ---
+        // --- UI CONTROL ---
         function toggleMode() {
             const isPvC = document.getElementById('mode').value === 'pvc';
-            document.getElementById('aiSettings').style.display = isPvC ? 'block' : 'none';
+            document.getElementById('diff').style.display = isPvC ? 'inline-block' : 'none';
             document.getElementById('name2').value = isPvC ? "Computer" : "Player 2";
             updateLabels();
-            reset(true);
+            score1 = 0; score2 = 0; totalMatches = 0;
+            document.getElementById('s1').innerText = "0";
+            document.getElementById('s2').innerText = "0";
+            resetBoard();
         }
 
         function updateLabels() {
-            document.getElementById('p1Label').innerText = document.getElementById('name1').value;
-            document.getElementById('p2Label').innerText = document.getElementById('name2').value;
+            document.getElementById('p1Label').innerText = document.getElementById('name1').value || "Player 1";
+            document.getElementById('p2Label').innerText = document.getElementById('name2').value || "Player 2";
         }
 
-        function updateStatus() {
+        function updateStatusUI() {
             const name = turn === "X" ? document.getElementById('name1').value : document.getElementById('name2').value;
             statusTxt.innerText = `${name}'s Turn!`;
+            statusTxt.style.color = turn === "X" ? "var(--p1)" : "var(--p2)";
         }
 
-        function reset(full) {
+        function resetBoard() {
             board = ["","","","","","","","",""];
             active = true; turn = "X";
-            updateStatus();
+            totalMatches++;
+            document.getElementById('matchCount').innerText = totalMatches;
+            updateStatusUI();
             cells.forEach(c => { c.innerText = ""; c.className = "cell"; });
         }
 
